@@ -1,5 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import PokemonThumnail from "./Componet/PokemonThumnail";
 
 function App() {
 
@@ -8,20 +10,42 @@ function App() {
 
        const getAllPokemons = async () =>{
           const res = await fetch(loadMore)
-          const data = res.json()
+          const data = await res.json()
 
-          console.log(data);
+          setLoadMore(data.next)
+          
+          function createPokemonObject (result){
+            result.forEach(async (pokemon) => {
+              const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon.name}`)
+              const data = await res.json()
+
+              setAllpokemons(currentList => [...currentList, data])
+
+            })
+          }
+          createPokemonObject(data.results) 
        }  
-
+       
+      useEffect(() =>{
+        getAllPokemons()
+      },[]) 
 
   return (
     <div className="app-contaner">
         <h1>Pokemon Evolution</h1>
         <div className="pokemon-container">
             <div className="all-container">
-
+                {allPokemons.map(pokemon => 
+                  <PokemonThumnail 
+                  key={Math.random()}
+                  id={pokemon.id}
+                  image={pokemon.sprites.other.dream_world.front_default}
+                  name={pokemon.name}
+                  type={pokemon.types[0].type.name}
+                  />
+                )}
             </div>
-            <button className="load-more">Load more</button>
+            <button className="load-more" onClick={() => getAllPokemons()}>Load more</button>
         </div>
     </div>
   );
